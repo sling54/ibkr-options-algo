@@ -127,3 +127,7 @@ daily_report.py          step 6  Greeks & P&L report
 earnings.py              helper  earnings calendar
 run_daily.sh             runs steps 1, 3-6
 ```
+
+## License
+
+MIT - see [LICENSE](LICENSE).
