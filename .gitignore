@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+.venv/
+
+# Output files the scripts create (market data + your account activity - keep private)
+*.csv
+daily_report_*.txt
+earnings_cache.json
+
+# Personal Claude Code settings
+.claude/settings.local.json
