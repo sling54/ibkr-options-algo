@@ -39,9 +39,7 @@ def holding(**overrides: object) -> PortfolioHolding:
     return PortfolioHolding(**fields)  # type: ignore[arg-type]
 
 
-GREEKS = Greeks(
-    delta=-0.2, gamma=0.03, theta=-0.04, vega=0.07, implied_vol=0.61, und_price=66.0
-)
+GREEKS = Greeks(delta=-0.2, gamma=0.03, theta=-0.04, vega=0.07, implied_vol=0.61, und_price=66.0)
 
 
 @pytest.mark.parametrize("value", [None, math.nan, 1.7976931348623157e308])
@@ -105,16 +103,11 @@ def test_actions_take_profit_dte_itm_and_earnings() -> None:
 
 
 def test_sell_call_flag_only_without_existing_short_call() -> None:
-    stock = position_row(
-        holding(sec_type="STK", quantity=200.0, right=""), None, None, TODAY
-    )
-    assert actions_for(
-        stock, has_short_call=False, take_profit_pct=50, close_at_dte=21
-    )[0].startswith("SELL CALL")
-    assert (
-        actions_for(stock, has_short_call=True, take_profit_pct=50, close_at_dte=21)
-        == ()
-    )
+    stock = position_row(holding(sec_type="STK", quantity=200.0, right=""), None, None, TODAY)
+    assert actions_for(stock, has_short_call=False, take_profit_pct=50, close_at_dte=21)[
+        0
+    ].startswith("SELL CALL")
+    assert actions_for(stock, has_short_call=True, take_profit_pct=50, close_at_dte=21) == ()
 
 
 def test_build_position_rows_links_short_calls_and_sorts() -> None:
@@ -144,9 +137,7 @@ def _inputs(rows: list, orders: list) -> ReportInputs:  # type: ignore[type-arg]
 
 
 def test_render_report_without_positions() -> None:
-    order = OpenOrder(
-        32, "HOOD", " HOOD  261224P00060000", "SELL", 1.0, 2.9, "Submitted", 0.0
-    )
+    order = OpenOrder(32, "HOOD", " HOOD  261224P00060000", "SELL", 1.0, 2.9, "Submitted", 0.0)
     text = render_report(_inputs([], [order]))
     assert "Capital in use:     $64,000.00 = 6.4% of account (limit 50%)" in text
     assert "Stocks in use:      1 of 5 (HOOD)" in text

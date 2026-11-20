@@ -101,9 +101,7 @@ def run(
     nasdaq_client: NasdaqClient,
     live: bool = False,
 ) -> int:
-    return run_orders(
-        cfg, connect, store, earnings, nasdaq_client.market_cap, live=live
-    )
+    return run_orders(cfg, connect, store, earnings, nasdaq_client.market_cap, live=live)
 
 
 def test_dry_run_never_places_orders(
@@ -178,15 +176,9 @@ def test_live_run_applies_every_risk_check(
     text = caplog.text
     assert "TSLA: skipped - already have a position or open order" in text
     assert "BIG cash_secured_put: REJECTED - uses $141,000 > 10% of account" in text
-    assert (
-        "BIG short_strangle: REJECTED - total would be $527,000 > 50% of account"
-        in text
-    )
+    assert "BIG short_strangle: REJECTED - total would be $527,000 > 50% of account" in text
     assert "WIDE cash_secured_put: REJECTED - P 38.0 spread 40% > 15%" in text
-    assert (
-        "HOOD cash_secured_put: REJECTED - earnings" in text
-        and "before expiration" in text
-    )
+    assert "HOOD cash_secured_put: REJECTED - earnings" in text and "before expiration" in text
     assert "Reached 5 stocks - stopping." in text
 
     assert placed == len(world.placed) == 3
@@ -234,8 +226,7 @@ def test_small_cap_strangle_rejected(
     run_pick(cfg, connect, store, earnings)
     run(cfg, connect, store, earnings, nasdaq_client)
     assert (
-        "SMALL short_strangle: REJECTED - not an ETF or large cap (market cap $2.0B)"
-        in caplog.text
+        "SMALL short_strangle: REJECTED - not an ETF or large cap (market cap $2.0B)" in caplog.text
     )
     assert "SPY short_strangle: PASSED" in caplog.text  # ETFs skip the market-cap check
 
@@ -252,9 +243,7 @@ def test_report_lists_positions_flags_and_orders(
     assert "POSITIONS (3)" in text
     assert "SELL CALL" in text
     assert "#77 SELL 1" in text
-    assert (
-        "Capital in use:     $102,000.00" in text
-    )  # 50k margin + 52k META put collateral
+    assert "Capital in use:     $102,000.00" in text  # 50k margin + 52k META put collateral
     rows = read(paths[1])
     assert {r["type"] for r in rows} == {"stock", "short put", "long call"}
 

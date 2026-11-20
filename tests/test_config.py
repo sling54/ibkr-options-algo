@@ -52,9 +52,7 @@ def test_live_ports_rejected(port: int) -> None:
         ("screen", "num_stocks", 80, "less than or equal to 50"),
     ],
 )
-def test_invalid_values_rejected(
-    section: str, key: str, value: object, message: str
-) -> None:
+def test_invalid_values_rejected(section: str, key: str, value: object, message: str) -> None:
     data = raw_config()
     data[section][key] = value
     with pytest.raises(ConfigError, match=message):

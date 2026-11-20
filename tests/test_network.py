@@ -39,9 +39,7 @@ class Responses:
         result = self.results.pop(0)
         if isinstance(result, Exception):
             raise result
-        return io.BytesIO(
-            result if isinstance(result, bytes) else json.dumps(result).encode()
-        )
+        return io.BytesIO(result if isinstance(result, bytes) else json.dumps(result).encode())
 
 
 def http(cfg: AppConfig, sleeps: list[float] | None = None) -> HttpClient:
@@ -64,18 +62,14 @@ def test_retries_transient_failures_with_backoff(
     assert fake.timeouts == [cfg.network.timeout_seconds] * 3
 
 
-def test_gives_up_after_retries(
-    cfg: AppConfig, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_gives_up_after_retries(cfg: AppConfig, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = Responses(*[urllib.error.URLError("down")] * 3)
     monkeypatch.setattr(urllib.request, "urlopen", fake)
     with pytest.raises(NetworkError, match="failed after 3 attempts"):
         http(cfg).get_json("https://x")
 
 
-def test_client_errors_are_not_retried(
-    cfg: AppConfig, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_client_errors_are_not_retried(cfg: AppConfig, monkeypatch: pytest.MonkeyPatch) -> None:
     fake = Responses(urllib.error.HTTPError("https://x", 403, "Forbidden", {}, None))  # type: ignore[arg-type]
     monkeypatch.setattr(urllib.request, "urlopen", fake)
     with pytest.raises(NetworkError, match="HTTP 403"):
@@ -83,9 +77,7 @@ def test_client_errors_are_not_retried(
     assert fake.calls == 1
 
 
-def test_invalid_json_is_reported(
-    cfg: AppConfig, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_invalid_json_is_reported(cfg: AppConfig, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(urllib.request, "urlopen", Responses(b"<html>blocked</html>"))
     with pytest.raises(NetworkError, match="invalid JSON"):
         http(cfg).get_json("https://x")
@@ -108,9 +100,7 @@ def test_market_cap_none_and_warning_when_endpoint_down(
     assert "Market cap for NVDA unavailable" in caplog.text
 
 
-def test_earnings_on_handles_empty_days(
-    nasdaq_client: NasdaqClient, nasdaq: FakeNasdaq
-) -> None:
+def test_earnings_on_handles_empty_days(nasdaq_client: NasdaqClient, nasdaq: FakeNasdaq) -> None:
     assert nasdaq_client.earnings_on(nasdaq.earnings_date("BABA")) == ["BABA"]
     assert nasdaq_client.earnings_on(nasdaq.today - timedelta(days=400)) == []
 
@@ -173,14 +163,9 @@ def test_calendar_stops_calling_a_dead_endpoint(
     with caplog.at_level(logging.ERROR):
         lookup = calendar.next_earnings(["BABA"])
     attempts_per_day = cfg.network.retries + 1
-    assert (
-        len(nasdaq.requests)
-        == cfg.earnings.abort_after_consecutive_failures * attempts_per_day
-    )
+    assert len(nasdaq.requests) == cfg.earnings.abort_after_consecutive_failures * attempts_per_day
     assert lookup.dates == {"BABA": None}
-    assert len(lookup.failed_days) == len(
-        weekdays_ahead(nasdaq.today, cfg.earnings.days_ahead)
-    )
+    assert len(lookup.failed_days) == len(weekdays_ahead(nasdaq.today, cfg.earnings.days_ahead))
     assert "Check earnings dates manually" in caplog.text
 
 
@@ -189,6 +174,4 @@ def test_corrupt_cache_is_ignored(
 ) -> None:
     store.earnings_cache.parent.mkdir(parents=True, exist_ok=True)
     store.earnings_cache.write_text("{not json")
-    assert earnings.next_earnings(["BABA"]).dates["BABA"] == nasdaq.earnings_date(
-        "BABA"
-    )
+    assert earnings.next_earnings(["BABA"]).dates["BABA"] == nasdaq.earnings_date("BABA")

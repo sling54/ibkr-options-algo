@@ -102,15 +102,9 @@ def test_large_cap_check_only_for_undefined_risk_on_stocks(
 
 def test_large_cap_reasons() -> None:
     assert large_cap_reasons(10e9, 10e9) == []
-    assert large_cap_reasons(5.04e9, 10e9) == [
-        "not an ETF or large cap (market cap $5.0B)"
-    ]
-    assert large_cap_reasons(None, 10e9) == [
-        "not an ETF or large cap (market cap unknown)"
-    ]
-    assert large_cap_reasons(0.0, 10e9) == [
-        "not an ETF or large cap (market cap unknown)"
-    ]
+    assert large_cap_reasons(5.04e9, 10e9) == ["not an ETF or large cap (market cap $5.0B)"]
+    assert large_cap_reasons(None, 10e9) == ["not an ETF or large cap (market cap unknown)"]
+    assert large_cap_reasons(0.0, 10e9) == ["not an ETF or large cap (market cap unknown)"]
 
 
 # ----------------------------------------------------------------------------- spreads
@@ -210,9 +204,7 @@ def test_capital_in_use_adds_short_put_collateral_and_open_orders() -> None:
 
 
 def test_account_value() -> None:
-    assert account_value({"NetLiquidation": "1005842.79"}) == pytest.approx(
-        1_005_842.79
-    )
+    assert account_value({"NetLiquidation": "1005842.79"}) == pytest.approx(1_005_842.79)
 
 
 # ----------------------------------------------------------------------------- timing

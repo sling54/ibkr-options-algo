@@ -46,9 +46,7 @@ def test_cli_reports_missing_tws(
     assert "ERROR: Could not connect to TWS" in capsys.readouterr().out
 
 
-def test_cli_reports_bad_config(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_cli_reports_bad_config(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     assert cli.main(["screen", "--config", str(tmp_path / "missing.toml")]) == 1
     assert "not found" in capsys.readouterr().out
 

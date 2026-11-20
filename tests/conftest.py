@@ -66,9 +66,7 @@ def nasdaq_client(cfg: AppConfig, nasdaq: FakeNasdaq) -> NasdaqClient:
 
 
 @pytest.fixture
-def earnings(
-    cfg: AppConfig, store: OutputStore, nasdaq_client: NasdaqClient
-) -> EarningsCalendar:
+def earnings(cfg: AppConfig, store: OutputStore, nasdaq_client: NasdaqClient) -> EarningsCalendar:
     return EarningsCalendar(
         nasdaq_client, cfg.earnings, store.earnings_cache, sleep=lambda _s: None
     )

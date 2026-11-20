@@ -133,16 +133,12 @@ class FakeWorld:
             for ei, exp in enumerate(self.expirations()):
                 for si, k in enumerate(self.listed_strikes(s, exp)):
                     for right in ("P", "C"):
-                        con_id = (
-                            s.con_id * 100_000 + ei * 2_000 + si * 2 + (right == "C")
-                        )
+                        con_id = s.con_id * 100_000 + ei * 2_000 + si * 2 + (right == "C")
                         self.options[con_id] = OptionSpec(con_id, s, exp, k, right)
                         self.option_ids[(s.symbol, exp, k, right)] = con_id
 
     def expirations(self) -> list[str]:
-        return [
-            (self.today + timedelta(days=d)).strftime("%Y%m%d") for d in EXPIRY_OFFSETS
-        ]
+        return [(self.today + timedelta(days=d)).strftime("%Y%m%d") for d in EXPIRY_OFFSETS]
 
     def listed_strikes(self, stock: FakeStock, expiration: str) -> list[float]:
         """Strikes listed for one expiration: nearer expiries list a narrower range."""
@@ -179,9 +175,7 @@ class FakeWorld:
         ask = round(price + half, 2)
         greeks = None
         if not s.no_greeks:
-            greeks = OptionComputation(
-                0, vol, delta, price, 0.0, gamma, vega, theta, s.price
-            )
+            greeks = OptionComputation(0, vol, delta, price, 0.0, gamma, vega, theta, s.price)
         return {
             "bid": bid if bid > 0 else 0.0,
             "ask": ask,
@@ -223,9 +217,7 @@ class FakeIB:
 
     # ------------------------------------------------------------------ session
 
-    def connect(
-        self, host: str, port: int, clientId: int = 0, timeout: float = 0
-    ) -> FakeIB:
+    def connect(self, host: str, port: int, clientId: int = 0, timeout: float = 0) -> FakeIB:
         if port not in self.world.open_ports:
             raise ConnectionRefusedError(f"nothing listening on {host}:{port}")
         self.world.connects.append((port, clientId))
@@ -291,7 +283,8 @@ class FakeIB:
         c.multiplier = "100"
         c.currency = "USD"
         c.tradingClass = spec.stock.symbol
-        c.localSymbol = f"{spec.stock.symbol:<6}{spec.expiration[2:]}{spec.right}{int(spec.strike * 1000):08d}"
+        strike_code = f"{int(spec.strike * 1000):08d}"
+        c.localSymbol = f"{spec.stock.symbol:<6}{spec.expiration[2:]}{spec.right}{strike_code}"
         if not c.exchange:
             c.exchange = "SMART"
 
@@ -337,9 +330,7 @@ class FakeIB:
                 return []
             details = []
             for k in self.world.listed_strikes(s, exp):
-                spec = self.world.options[
-                    self.world.option_ids[(s.symbol, exp, k, contract.right)]
-                ]
+                spec = self.world.options[self.world.option_ids[(s.symbol, exp, k, contract.right)]]
                 c = Contract()
                 self._fill_option(c, spec)
                 details.append(ContractDetails(contract=c))
@@ -361,9 +352,7 @@ class FakeIB:
 
     def reqScannerData(self, subscription: Any, *_args: Any) -> list[ScanData]:
         stocks = [
-            s
-            for s in self.world.stocks
-            if subscription.stockTypeFilter == "ALL" or not s.is_etf
+            s for s in self.world.stocks if subscription.stockTypeFilter == "ALL" or not s.is_etf
         ]
         stocks = stocks[: subscription.numberOfRows]
         return [
@@ -446,10 +435,7 @@ class FakeIB:
         s = legs[0].stock
         if not s.whatif_ok:
             return []
-        margin = (
-            sum(s.margin_per_leg_pct * s.price * 100 for _ in legs)
-            * order.totalQuantity
-        )
+        margin = sum(s.margin_per_leg_pct * s.price * 100 for _ in legs) * order.totalQuantity
         return OrderState(initMarginChange=f"{margin:.2f}")
 
     def placeOrder(self, contract: Contract, order: Any) -> Trade:
@@ -457,11 +443,7 @@ class FakeIB:
         order.orderId = self.world.next_order_id
         self.world.next_order_id += 1
         status = OrderStatus(orderId=order.orderId, status="Submitted")
-        log = [
-            TradeLogEntry(
-                time=datetime.now(), status="Submitted", message="", errorCode=0
-            )
-        ]
+        log = [TradeLogEntry(time=datetime.now(), status="Submitted", message="", errorCode=0)]
         return Trade(contract=contract, order=order, orderStatus=status, log=log)
 
 
@@ -480,13 +462,9 @@ def default_world(today: date | None = None) -> FakeWorld:
     - META: short put held (busy), TSLA: open order (busy)
     """
     stocks = [
-        FakeStock(
-            "NVDA", 154.19, 1001, iv=0.62, iv_low=0.28, iv_high=0.64, stock_iv=0.62
-        ),
+        FakeStock("NVDA", 154.19, 1001, iv=0.62, iv_low=0.28, iv_high=0.64, stock_iv=0.62),
         FakeStock("BABA", 86.97, 1002, iv=0.54, iv_low=0.30, iv_high=0.55),
-        FakeStock(
-            "HOOD", 68.55, 1003, iv=0.80, iv_low=0.45, iv_high=0.82, stock_iv=0.80
-        ),
+        FakeStock("HOOD", 68.55, 1003, iv=0.80, iv_low=0.45, iv_high=0.82, stock_iv=0.80),
         FakeStock("SMALL", 18.40, 1004, iv=0.90, iv_low=0.40, iv_high=0.95),
         FakeStock(
             "SPY",
@@ -498,24 +476,16 @@ def default_world(today: date | None = None) -> FakeWorld:
             iv_high=0.23,
             daily_vol=0.006,
         ),
-        FakeStock(
-            "WIDE", 42.00, 1006, iv=0.70, iv_low=0.30, iv_high=0.72, spread_frac=0.40
-        ),
-        FakeStock(
-            "BIG", 1500.0, 1007, iv=0.45, iv_low=0.20, iv_high=0.46, stock_iv=0.45
-        ),
-        FakeStock(
-            "NOMARGIN", 55.0, 1008, iv=0.65, iv_low=0.25, iv_high=0.66, whatif_ok=False
-        ),
+        FakeStock("WIDE", 42.00, 1006, iv=0.70, iv_low=0.30, iv_high=0.72, spread_frac=0.40),
+        FakeStock("BIG", 1500.0, 1007, iv=0.45, iv_low=0.20, iv_high=0.46, stock_iv=0.45),
+        FakeStock("NOMARGIN", 55.0, 1008, iv=0.65, iv_low=0.25, iv_high=0.66, whatif_ok=False),
         FakeStock("LOWIV", 120.0, 1009, iv=0.21, iv_low=0.20, iv_high=0.60),
         FakeStock("NEW", 30.0, 1010, iv_days=40),
         FakeStock("BROKE", 75.0, 1011, history_error=True),
         FakeStock("AAPL", 228.0, 1012, iv=0.25, iv_low=0.18, iv_high=0.40),
         FakeStock("META", 590.0, 1013, iv=0.42, iv_low=0.25, iv_high=0.43),
         FakeStock("TSLA", 330.0, 1014, iv=0.70, iv_low=0.40, iv_high=0.71),
-        FakeStock(
-            "NOGREEK", 64.0, 1015, iv=0.70, iv_low=0.30, iv_high=0.71, no_greeks=True
-        ),
+        FakeStock("NOGREEK", 64.0, 1015, iv=0.70, iv_low=0.30, iv_high=0.71, no_greeks=True),
     ]
     world = FakeWorld(stocks=stocks, today=today or date.today())
     add_holdings(world)

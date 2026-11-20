@@ -41,6 +41,66 @@ where = ["src"]
 [tool.setuptools.package-data]
 ibkr_options_algo = ["py.typed"]
 
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "SIM",      # simplify
+    "C4",       # comprehensions
+    "PTH",      # pathlib
+    "RUF",      # ruff-specific
+    "N",        # naming
+    "PL",       # pylint subset
+]
+ignore = [
+    "PLR0913",  # many arguments: report/row builders mirror the data they carry
+    "PLR0917",  # many positional arguments: same reason
+    "PLR2004",  # magic-value comparison: flagged on test assertions and enum-like literals
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The fake broker mirrors ib_async's camelCase method and argument names.
+"tests/**" = ["PLR0915", "PLC0415", "N802", "N803"]
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.10"
+mypy_path = "src"
+packages = ["ibkr_options_algo"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+
+# tomli is only installed (and imported) on Python 3.10.
+[[tool.mypy.overrides]]
+module = ["tomli"]
+ignore_missing_imports = true
+
+# The pure layers carry no I/O, so hold them to the strictest standard.
+[[tool.mypy.overrides]]
+module = [
+    "ibkr_options_algo.calculations",
+    "ibkr_options_algo.config",
+    "ibkr_options_algo.errors",
+    "ibkr_options_algo.models",
+    "ibkr_options_algo.reporting",
+    "ibkr_options_algo.risk",
+    "ibkr_options_algo.strategy",
+]
+strict = true
+
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -118,9 +118,7 @@ def test_screen_result_rounds_and_flags_on_rounded_values() -> None:
     # IV rank of 49.96 rounds to 50.0, which counts as a candidate (as the old CSV reader saw it).
     history = [0.20] * 10 + [0.30] + [0.2 + 0.1 * 0.4996]
     prices = [100.0 + 0.01 * (i % 2) for i in range(30)]  # almost no realized vol
-    r = screen_result(
-        7, "XYZ", history, prices, hv_days=20, min_iv_rank=50, min_gap=0.0
-    )
+    r = screen_result(7, "XYZ", history, prices, hv_days=20, min_iv_rank=50, min_gap=0.0)
     assert r.iv_rank == 50.0
     assert r.is_candidate
     assert r.activity_rank == 7
@@ -131,25 +129,19 @@ def test_screen_result_rounds_and_flags_on_rounded_values() -> None:
 
 def test_screen_result_ratio_blank_when_hv_is_zero() -> None:
     prices = [100.0] * 25
-    r = screen_result(
-        1, "FLAT", [0.2, 0.3], prices, hv_days=20, min_iv_rank=50, min_gap=0.0
-    )
+    r = screen_result(1, "FLAT", [0.2, 0.3], prices, hv_days=20, min_iv_rank=50, min_gap=0.0)
     assert r.hv_pct == 0.0
     assert r.iv_hv_ratio is None
 
 
 def test_rank_screen_results_orders_by_rank_then_gap_and_numbers_them() -> None:
-    base = screen_result(
-        1, "A", [0.2, 0.4], [100.0 + i for i in range(25)], 20, 50, 0.0
-    )
+    base = screen_result(1, "A", [0.2, 0.4], [100.0 + i for i in range(25)], 20, 50, 0.0)
     from dataclasses import replace
 
     a = replace(base, symbol="A", iv_rank=80.0, iv_minus_hv=5.0)
     b = replace(base, symbol="B", iv_rank=90.0, iv_minus_hv=1.0)
     c = replace(base, symbol="C", iv_rank=80.0, iv_minus_hv=9.0)
-    d = replace(
-        base, symbol="D", iv_rank=80.0, iv_minus_hv=5.0
-    )  # exact tie with A keeps order
+    d = replace(base, symbol="D", iv_rank=80.0, iv_minus_hv=5.0)  # exact tie with A keeps order
     ranked = rank_screen_results([a, b, c, d])
     assert [(r.symbol, r.rank) for r in ranked] == [
         ("B", 1),
@@ -178,9 +170,7 @@ def test_pick_expiration_tie_goes_to_earlier() -> None:
 
 def test_pick_expiration_falls_back_outside_window() -> None:
     expirations = [exp(4), exp(12), exp(60)]
-    assert pick_expiration(expirations, TODAY, 30, 45, 38, 7) == exp(
-        60
-    )  # |60-38| < |12-38|
+    assert pick_expiration(expirations, TODAY, 30, 45, 38, 7) == exp(60)  # |60-38| < |12-38|
 
 
 def test_pick_expiration_none_when_everything_too_close() -> None:
@@ -211,9 +201,7 @@ def test_at_the_money_first_on_tie() -> None:
 
 def test_select_strikes_splits_around_atm_within_reach() -> None:
     strikes = [float(s) for s in range(80, 121, 5)]
-    sel = select_strikes(
-        strikes, price=101.0, move=5.0, moves_each_side=2.0, max_per_side=20
-    )
+    sel = select_strikes(strikes, price=101.0, move=5.0, moves_each_side=2.0, max_per_side=20)
     assert sel == StrikeSelection(below=[95.0], atm=100.0, above=[105.0, 110.0])
 
 

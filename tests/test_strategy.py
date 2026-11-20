@@ -116,9 +116,7 @@ def test_covered_call_breakeven_uses_cost_basis() -> None:
 def test_chance_otm_floors_at_zero_and_zero_capital_gives_blank_returns() -> None:
     legs = straddle_legs(QUOTES, 69.0)
     assert legs is not None
-    idea = build_trade_idea(
-        CTX, Strategy.SHORT_STRADDLE, put=legs[0], call=legs[1], capital=0.0
-    )
+    idea = build_trade_idea(CTX, Strategy.SHORT_STRADDLE, put=legs[0], call=legs[1], capital=0.0)
     assert idea.chance_all_otm_pct == 0
     assert idea.return_pct is None
     assert idea.annualized_pct is None
@@ -179,12 +177,8 @@ def test_margin_order_spec_is_one_lot_at_unrounded_mid() -> None:
 
 
 def test_trade_order_spec_rounds_to_tick_and_tags_order() -> None:
-    idea = build_trade_idea(
-        CTX, Strategy.CASH_SECURED_PUT, put=QUOTES[2], capital=6900.0
-    )
-    spec, mid = trade_order_spec(
-        idea, {"P": quote("P", 69.0, -0.48, bid=4.91, ask=5.12)}
-    )
+    idea = build_trade_idea(CTX, Strategy.CASH_SECURED_PUT, put=QUOTES[2], capital=6900.0)
+    spec, mid = trade_order_spec(idea, {"P": quote("P", 69.0, -0.48, bid=4.91, ask=5.12)})
     assert mid == 5.0  # 5.015 rounds to the $0.05 tick
     assert spec.credit == mid
     assert not spec.is_combo

@@ -22,9 +22,7 @@ from tests.conftest import quote
 
 
 def _idea() -> TradeIdea:
-    ctx = UnderlyingContext(
-        "HOOD", 68.55, "20261224", 37, False, 69.0, date(2026, 12, 17)
-    )
+    ctx = UnderlyingContext("HOOD", 68.55, "20261224", 37, False, 69.0, date(2026, 12, 17))
     return build_trade_idea(
         ctx,
         Strategy.CASH_SECURED_PUT,
