@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from ibkr_options_algo.config import AppConfig, load_config
+from ibkr_options_algo.models import OptionQuote, Right
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -27,3 +28,22 @@ def cfg(base_cfg: AppConfig, tmp_path: Path) -> AppConfig:
 @pytest.fixture
 def today() -> date:
     return date.today()
+
+
+def quote(
+    right: Right,
+    strike: float,
+    delta: float,
+    bid: float = 1.0,
+    ask: float = 1.1,
+    con_id: int = 0,
+) -> OptionQuote:
+    """Build an OptionQuote with sensible defaults for tests."""
+    return OptionQuote(
+        con_id=con_id or int(strike * 100) + (1 if right == "C" else 0),
+        right=right,
+        strike=strike,
+        bid=bid,
+        ask=ask,
+        delta=delta,
+    )
