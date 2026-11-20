@@ -1,0 +1,87 @@
+# Settings and risk limits for ibkr-algo.
+# Every value here is required and validated on startup (see src/ibkr_options_algo/config.py).
+# Percentages are written as percent (10 = 10%); deltas and IV as decimals (0.30, 0.5).
+
+[ibkr]
+host = "127.0.0.1"
+# Only paper ports are allowed here. The loader rejects the live ports (7496, 4001).
+paper_ports = [7497, 4002]          # TWS paper, IB Gateway paper
+connect_timeout_seconds = 5
+market_data_type = 4                # 4 = live if subscribed, otherwise free delayed data
+quote_batch_size = 40               # IBKR streams ~100 quotes at once; bigger batches come back blank
+quote_wait_seconds = 6              # time for bid/ask/Greeks to arrive for one batch
+greeks_timeout_seconds = 15         # report: poll once a second for Greeks, up to this long
+pnl_wait_seconds = 2                # report: time for IBKR to stream today's P&L
+order_ack_wait_seconds = 3          # live orders: time for TWS to acknowledge an order
+history_duration = "1 Y"
+history_timeout_seconds = 30
+
+# A distinct client id per command, so two commands can run side by side.
+[ibkr.client_ids]
+check = 1
+chain = 2
+screen = 3
+pick = 4
+orders = 5
+report = 6
+
+[screen]
+num_stocks = 50                     # IBKR's scanner returns at most 50 rows
+include_etfs = true                 # false = only company stocks (drops SPY, QQQ, GLD, ...)
+scan_code = "OPT_VOLUME_MOST_ACTIVE"
+location_code = "STK.US.MAJOR"
+min_iv_rank = 50                    # candidate: IV rank at least this high...
+min_iv_hv_gap = 0.0                 # ...and IV more than this many vol points above HV
+hv_days = 20                        # realized-vol window in trading days (~1 month, matches 30-day IV)
+min_iv_history_days = 60            # need this much IV history for IV rank to mean anything
+
+[pick]
+min_dte = 30                        # expiration window (days to expiration)
+max_dte = 45
+target_dte = 38                     # pick the expiration closest to this
+fallback_min_dte = 7                # if nothing is in the window, nearest expiration at least this far out
+put_delta = 0.30                    # cash-secured put
+call_delta = 0.30                   # covered call
+strangle_delta = 0.16               # each side of the strangle
+delta_tolerance = 0.08              # skip a leg if no strike is within this of the target delta
+earnings_buffer_days = 7            # don't sell premium on a stock reporting within this many days
+max_strikes_per_side = 20           # how many strikes to price on each side of the stock price
+strike_range_expected_moves = 2.0   # price strikes out to this many expected moves each side
+default_iv = 0.5                    # IV used for the expected move when IBKR returns none
+
+[risk]
+max_trade_pct = 10                  # max % of account value one trade can use
+max_total_pct = 50                  # max % of account value all trades together can use
+max_positions = 5                   # max stocks with option positions / open orders
+max_spread_pct = 15                 # skip a leg if (ask - bid) / mid is wider than this
+large_cap_usd = 10_000_000_000      # strangles/straddles only on ETFs or companies this big
+earnings_buffer_days = 7            # no new trades this close to earnings
+block_earnings_before_expiry = true # no trades that would be open during earnings
+# Strategy tried first for each stock: the wheel first, undefined-risk ones last.
+strategy_priority = ["covered_call", "cash_secured_put", "short_strangle", "short_straddle"]
+
+[report]
+take_profit_pct = 50                # flag short options that have made this % of max profit
+close_at_dte = 21                   # flag positions with this many days (or fewer) left
+
+[earnings]
+days_ahead = 60                     # covers the 30-45 day expirations
+request_delay_seconds = 0.2         # pause between Nasdaq requests
+max_failed_days_to_cache = 4        # only cache a download with at most this many failed days
+abort_after_consecutive_failures = 3  # stop calling Nasdaq once it has failed this many days in a row
+
+[network]
+timeout_seconds = 15
+retries = 2                         # extra attempts after the first one fails
+backoff_seconds = 1.0               # wait before retry n is backoff * 2**(n-1)
+user_agent = "Mozilla/5.0 (options-screener)"  # Nasdaq refuses requests without a browser-like agent
+
+[chain]
+min_dte = 20
+max_dte = 50
+strike_range_pct = 10               # only strikes within +/-10% of the stock price
+fallback_expirations = 2            # if none fall in the window, take the nearest N
+preview_rows = 10
+
+[output]
+directory = "output"
