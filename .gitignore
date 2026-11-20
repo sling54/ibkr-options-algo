@@ -1,11 +1,22 @@
 # Python
 __pycache__/
 .venv/
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
-# Output files the scripts create (market data + your account activity - keep private)
+# Everything the pipeline writes (market data + your account activity - keep private)
+output/
+# Files the old scripts wrote to the repo root
 *.csv
 daily_report_*.txt
 earnings_cache.json
+
+# Personal notes, never published
+LEARNING.md
 
 # Personal Claude Code settings
 .claude/settings.local.json
