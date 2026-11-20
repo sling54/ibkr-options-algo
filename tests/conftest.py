@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import urllib.request
 from datetime import date
 from pathlib import Path
 
 import pytest
 
 from ibkr_options_algo.config import AppConfig, load_config
+from ibkr_options_algo.earnings import EarningsCalendar
 from ibkr_options_algo.models import OptionQuote, Right
+from ibkr_options_algo.sources.http import HttpClient
+from ibkr_options_algo.sources.nasdaq import NasdaqClient
+from ibkr_options_algo.storage import OutputStore
+from tests.fake_nasdaq import FakeNasdaq, default_nasdaq
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,6 +34,32 @@ def cfg(base_cfg: AppConfig, tmp_path: Path) -> AppConfig:
 @pytest.fixture
 def today() -> date:
     return date.today()
+
+
+@pytest.fixture
+def nasdaq(today: date, monkeypatch: pytest.MonkeyPatch) -> FakeNasdaq:
+    fake = default_nasdaq(today)
+    monkeypatch.setattr(urllib.request, "urlopen", fake.urlopen)
+    return fake
+
+
+@pytest.fixture
+def store(cfg: AppConfig) -> OutputStore:
+    return OutputStore(cfg.output.directory)
+
+
+@pytest.fixture
+def nasdaq_client(cfg: AppConfig, nasdaq: FakeNasdaq) -> NasdaqClient:
+    return NasdaqClient(HttpClient(cfg.network, sleep=lambda _s: None))
+
+
+@pytest.fixture
+def earnings(
+    cfg: AppConfig, store: OutputStore, nasdaq_client: NasdaqClient
+) -> EarningsCalendar:
+    return EarningsCalendar(
+        nasdaq_client, cfg.earnings, store.earnings_cache, sleep=lambda _s: None
+    )
 
 
 def quote(
